@@ -8,10 +8,13 @@ import '../../../utils/widgets/commen_appBar.dart';
 import '../../../utils/widgets/global_widgets.dart';
 import '../../Vahical/screen/add_vahical.dart';
 import '../../Vahical/screen/vehicle_list.dart';
+import '../../Visitor/screen/add_friends_family.dart';
 import '../../Visitor/screen/add_visitor.dart';
 import '../../Visitor/screen/visitor_list.dart';
 import '../../incident/screen/add_incident.dart';
 import '../../incident/screen/incidentListScreen.dart';
+import '../../kids/screen/add_kids.dart';
+import '../../kids/screen/kids_list.dart';
 import '../controllers/dashboard_controller.dart';
 import '../models/guard_dashboard.dart';
 
@@ -37,6 +40,7 @@ class _UserDashboardState extends State<UserDashboard> {
 
   load() async {
     await dashboardController.getGuardDashboard(dateNow);
+    await dashboardController.getProfile();
 
   }
   @override
@@ -44,8 +48,8 @@ class _UserDashboardState extends State<UserDashboard> {
     return Obx(() {
         return CommenAppBar(
             image: "assets/guard.png",
-            name: "Manoj",
-            position: "Guard",
+            name: "${dashboardController.profileModel.value.data?.name}",
+            position: "${dashboardController.profileModel.value.data?.role}",
             address: "Vision Rytham A wing Gate 1",
             date: "date",
 isDateSelect: true,
@@ -174,6 +178,7 @@ Widget _dashboardCard1(Visitors? visitors) {
               const SizedBox(height: 15),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   _statItem(
                     number: "${visitors?.exited}",
@@ -182,32 +187,63 @@ Widget _dashboardCard1(Visitors? visitors) {
                     color: Colors.green,
                   ),
                   Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Get.to(AddVisitor());
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black,
-                        textStyle: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          SvgPicture.asset(
-                            "assets/exit_visitor.svg",
-                            color: Colors.white,
-                            height: 15,
-                            width: 15,
+                    child: Column(
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            Get.to(AddVisitor());
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.black,
+                            textStyle: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
                           ),
-                          SizedBox(width: 4),
-                          Text("Add Visitor"),
-                        ],
-                      ),
+                          child: Row(
+                            children: [
+                              SvgPicture.asset(
+                                "assets/exit_visitor.svg",
+                                color: Colors.white,
+                                height: 15,
+                                width: 15,
+                              ),
+                              SizedBox(width: 4),
+                              Text("Add Visitor"),
+                            ],
+                          ),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            Get.to(AddFriendsFamily());
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.black,
+                            textStyle: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              SvgPicture.asset(
+                                "assets/exit_visitor.svg",
+                                color: Colors.white,
+                                height: 15,
+                                width: 15,
+                              ),
+                              SizedBox(width: 4),
+                              Text("Add F and F"),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -360,6 +396,9 @@ Widget _dashboardCard3(Kids? kids) {
                     label: "Total Kids",
                     color: Colors.grey,
                     image: 'assets/k_total.svg',
+                    onPressed: (){
+                      Get.to(KidsList());
+                    }
                   ),
                   SizedBox(width: 20),
                   _statItem(
@@ -382,7 +421,10 @@ Widget _dashboardCard3(Kids? kids) {
                   ),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Get.to(AddKids());
+
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.black,
                         textStyle: TextStyle(

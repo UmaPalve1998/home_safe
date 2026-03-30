@@ -5,24 +5,26 @@ import 'package:home_safe/app/module/Vahical/controllers/vehicle_api_provider.da
 import '../../../utils/difenece_colors.dart';
 import '../../../utils/helpers/dailog_helper.dart';
 import '../../dashboard/screen/user_dashboard.dart';
-import '../models/vehicle_list_model.dart';
-import '../models/vehicle_search_model.dart';
+import '../models/kids_list_model.dart';
+import '../models/kids_search_model.dart';
+import 'kids_api_provider.dart';
 import 'package:flutter/material.dart';
-class VahicleController extends GetxController {
+
+class KidsController extends GetxController {
   var isLoading = false.obs; // Observable loading state
   var isLoadingKids = false.obs; // Observable loading state
   var errorMessage = ''.obs; // Observable error message
-  var vehicleListModel = VehicleListModel().obs;// Observable for login response
-  var vehicleSearchModel = VehicleSearchModel().obs;// Observable for login response
+  var kidsListModel = KidsListModel().obs;// Observable for login response
+  var kidsSearchModel = KidsSearchModel().obs;// Observable for login response
   var page = 1;
   var totalPages = 1;
   var isPaginationLoading = false.obs;
 
   final int limit = 10;
 
-  final VehicleAPIProvider apiProvider = VehicleAPIProvider();
+  final KidsAPIProvider apiProvider = KidsAPIProvider();
   // ================= INITIAL + REFRESH =================
-  Future<void> getVehicleList({bool isRefresh = false}) async {
+  Future<void> getKidsList({bool isRefresh = false}) async {
     if (isLoading.value || isPaginationLoading.value) return;
 
     if (isRefresh) {
@@ -38,19 +40,19 @@ class VahicleController extends GetxController {
         isPaginationLoading.value = true;
       }
 
-      final response = await apiProvider.getVehicleList(limit, page);
+      final response = await apiProvider.getKids(limit, page);
 
       if (page == 1) {
         // First page or refresh
-        vehicleListModel.value = response;
+        kidsListModel.value = response;
       } else {
         // Append data
-        vehicleListModel.update((val) {
+        kidsListModel.update((val) {
           val?.data?.addAll(response.data ?? []);
         });
       }
 
-      totalPages = response?.totalPages ?? 1;
+      totalPages = response?.total ?? 1;
 
       page++;
     } catch (e) {
@@ -65,22 +67,22 @@ class VahicleController extends GetxController {
   // ================= LOAD MORE =================
   void loadMore() {
     if (page <= totalPages) {
-      getVehicleList();
+      getKidsList();
     }
   }
 
   // ================= PULL TO REFRESH =================
   Future<void> refreshList() async {
-    await getVehicleList(isRefresh: true);
+    await getKidsList(isRefresh: true);
   }
 
   Future<void> getKidsSearch(search) async {
     // DialogHelper.showLoading();
-    vehicleSearchModel.value = VehicleSearchModel();
-    isLoadingKids.value = true;
+    kidsSearchModel.value = KidsSearchModel();
+        isLoadingKids.value = true;
     errorMessage.value = '';
     try {
-      vehicleSearchModel.value = await apiProvider.getVehicleSearch(search);
+      kidsSearchModel.value = await apiProvider.getKidsSearchList(search);
       DialogHelper.hideLoading();
     } catch (e) {
       // DialogHelper.hideLoading();
@@ -91,11 +93,11 @@ class VahicleController extends GetxController {
     }
   }
 
-  Future<void> addVehicle(vehicleNo,name,phone,block,floor,flat,status,ownerId) async {
+  Future<void> addKid(kidName,age,gender,parentName,parentPhone,block,flat,floor,status,tenentId) async {
     try {
       isLoading.value = true;
       DialogHelper.showLoading();
-      final response = await apiProvider.addVehicle(vehicleNo,name,phone,block,floor,flat,status,ownerId);
+      final response = await apiProvider.addKid(kidName,age,gender,parentName,parentPhone,block,flat,floor,status,tenentId);
       print("reponse c${response['success']}");
       if(response['success']){
         print("reponse if ${response}");
@@ -128,6 +130,5 @@ class VahicleController extends GetxController {
       DialogHelper.hideLoading();
     }
   }
-
 
 }

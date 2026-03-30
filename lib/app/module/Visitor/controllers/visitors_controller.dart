@@ -93,6 +93,7 @@ class VisitorsController extends GetxController {
     try {
       DialogHelper.showLoading();
       final response = await apiProvider.addVisitors(name,phone,nOfPerson,vehicleNo,guardName, image,tenantsOwnerSelected);
+     print("reponse ${response}");
       if(response['success']){
         Get.snackbar("Sucess", "${response['message']}",
           snackPosition: SnackPosition.BOTTOM,
@@ -156,6 +157,42 @@ print("response ${response}");
     await getVisitorsList(isRefresh: true);
   }
 
+  Future<void> updateVisitorsStatuus(visitorsId,unitId,status) async {
+    try {
+      isLoading.value = true;
+      DialogHelper.showLoading();
+      final response = await apiProvider.updateVisitorsStatuus(visitorsId,unitId,status);
+      print("reponse c${response['success']}");
+      if(response['success']){
+        print("reponse if ${response}");
+        isLoading.value = false;
+        DialogHelper.hideLoading();
+        update();
+        Get.snackbar("Sucess", "${response['message']}",
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: DifeneceColors.thickGreen,
+          colorText: Colors.white,
+        );
+        getVisitorsList(isRefresh: true);
+
+      }else{
+        Get.snackbar("Error", "${response['message']}",
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: DifeneceColors.appColor,
+          colorText: Colors.white,
+        );
+      }
+      print("response ${response}");
+
+
+    } catch (e) {
+      errorMessage.value = e.toString();
+    } finally {
+      isLoading.value = false;
+      isPaginationLoading.value = false;
+      DialogHelper.hideLoading();
+    }
+  }
 
   // Future<void> getVisitorsList(int limit, int page) async {
   //   DialogHelper.showLoading();

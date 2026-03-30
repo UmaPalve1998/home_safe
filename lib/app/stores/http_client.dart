@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:dio/dio.dart' as d;
 import 'package:home_safe/app/stores/rest_apis_urls.dart';
 import 'package:http/http.dart' as http;
 import '../module/auth/screen/auth_screen.dart';
@@ -12,6 +13,7 @@ import 'app_exception.dart';
 import 'package:get/get.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:dio/dio.dart' as a;
 
 class HttpClient {
   // Singleton instance
@@ -112,6 +114,43 @@ class HttpClient {
     }
   }
 
+  dynamic _processResponseDio(d.Response response) {
+    dynamic responseJson;
+    if (response.data is List<int>) {
+      // only for byte responses
+      responseJson = utf8.decode(response.data);
+    } else {
+      // Dio already decoded JSON / string
+      responseJson = response.data;
+    }
+    print("statsu ${response.statusCode}");
+    switch (response.statusCode) {
+      case 200:
+        return responseJson;
+      case 201:
+        return responseJson;
+      case 400:
+        throw BadRequestException(
+            responseJson, response!.realUri.toString());
+      case 401:
+        _handleSessionExpiry();
+        throw UnAuthorizedException(
+            responseJson, response.realUri.toString());
+      case 403:
+        _handleSessionExpiry();
+        throw UnAuthorizedException(
+            responseJson, response.realUri.toString());
+      case 404:
+        throw FetchDataException(
+            "Resource not found", response.realUri.toString());
+      case 500:
+      default:
+        throw FetchDataException(
+            "Error occurred with code : ${response.statusCode}",
+            response.realUri.toString());
+    }
+  }
+
   dynamic _processResponseDoc(http.Response response) {
     switch (response.statusCode) {
       case 200:
@@ -160,7 +199,7 @@ class HttpClient {
     var uri = Uri.parse(RestApisUrls.BASE_URL + endPoint);
     print("body from Http client ${body}");
     print("body from Http client ${uri}");
-    var headers = await getHeaders();
+    var headers = await getHeadersBarrierToken();
     if (!await isConnected()) {
       CommonMessage.showsnackBar("No Internet Connection");
       return null;
@@ -179,10 +218,33 @@ class HttpClient {
     }
   }
 
+  Future<dynamic> patch(String endPoint, dynamic body) async {
+    var uri = Uri.parse(RestApisUrls.BASE_URL + endPoint);
+    print("body from Http client ${body}");
+    print("body from Http client ${uri}");
+    var headers = await getHeadersBarrierToken();
+    if (!await isConnected()) {
+      CommonMessage.showsnackBar("No Internet Connection");
+      return null;
+    }
+    try {
+      final response = await http
+          .patch(uri, body: jsonEncode(body), headers: headers)
+          .timeout(const Duration(seconds: 60));
+      print(response.body);
+      return _processResponse(response);
+    } on SocketException {
+      throw FetchDataException("No Internet Connection", uri.toString());
+    } on TimeoutException {
+      throw ApiNotRespondingException(
+          "API not responded in time", uri.toString());
+    }
+  }
+
   Future<dynamic> multipartForm({
     required String endPoint,
-    required Map<String, String> fields,
-    required List<File>? files,
+    required d.FormData fromData,
+    // required List<File>? files,
   }) async {
     if (!await isConnected()) {
       CommonMessage.showsnackBar("No Internet Connection");
@@ -191,31 +253,21 @@ class HttpClient {
 
     var uri = Uri.parse(RestApisUrls.BASE_URL + endPoint);
     var headers = await getHeadersBarrierToken();
+    a.Dio dio = d.Dio();
 
-    try {
-      var request = http.MultipartRequest('POST', uri)
-        ..headers.addAll(headers)
-        ..fields.addAll(fields);
 
-      if (files!= null && files.isNotEmpty) {
-        for (var file in files) {
-          request.files.add(    await http.MultipartFile.fromPath(
-            'image',           // field name (API key name)
-            file.path,
-          ));
-        }
-      }
-print("body ${request.fields}");
-      var streamedResponse = await request.send();
-      var response = await http.Response.fromStream(streamedResponse);
+      try {
+        d.Response response = await dio.post(
+          "${RestApisUrls.BASE_URL + endPoint}",
+          data: fromData,
+          options: d. Options(
+            contentType: "multipart/form-data",
+            headers: headers
+          ),
+        );
+        print("response ${response.data}");
+        return _processResponseDio(response);
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return _processResponse(response);
-      } else {
-        print("status: ${response.statusCode}");
-        print("response: ${response.body}");
-        throw Exception("Failed to upload data");
-      }
     } catch (e) {
       print("Error in multipart form upload: $e");
       throw Exception("Multipart form upload failed");

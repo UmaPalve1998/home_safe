@@ -104,6 +104,14 @@ class _VisitorsListState extends State<VisitorsList> {
 // ================= CARD TEMPLATE =================
 
 Widget _dashboardCard1(Visitora visitors) {
+  VisitorsController visitorController = Get.put(VisitorsController());
+
+
+  String selectedValue = "";
+
+  final List<String> items = ["In", "Out", "Return"];
+  // selectedValue =visitors.units.isEmpty? : ;
+
   return Container(
     padding: const EdgeInsets.all(15),
     margin: const EdgeInsets.symmetric(vertical: 8),
@@ -212,7 +220,49 @@ Widget _dashboardCard1(Visitora visitors) {
                 ),
               ),
               SizedBox(height: 5),
-              _statItemWidgetButton(
+              visitors.units.isNotEmpty && visitors.units[0].status == "Approved"?Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade500,
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        // value: selectedValue,
+                        dropdownColor: Colors.grey.shade600,
+                        hint: Text("Action",style: TextStyle(
+                          color: Colors.white
+                        ),),
+                        icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        items: items.map((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Row(
+                              children: [
+                                const Icon(Icons.crop_square_outlined,
+                                    color: Colors.white, size: 18),
+                                const SizedBox(width: 8),
+                                Text(value),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (value) async {
+                          await visitorController.updateVisitorsStatuus(visitors.visitorId,
+                              visitors.units.isNotEmpty? visitors.units[0].id :"",
+                              value
+                          );
+
+                        },
+                      ),
+                    ),
+                  )
+               :_statItemWidgetButton(
                 label: Icons.check_box_outline_blank,
                 value: "Out",
                 color: DifeneceColors.valueColor,

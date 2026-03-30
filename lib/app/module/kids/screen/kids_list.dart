@@ -7,19 +7,19 @@ import '../../../utils/difenece_text_style.dart';
 import '../../../utils/helpers/date_format.dart';
 import '../../../utils/widgets/commen_appBar.dart';
 import '../../../utils/widgets/global_widgets.dart';
-import '../controllers/Vehicle_controller.dart';
-import '../models/vehicle_list_model.dart';
+import '../controllers/kids_controller.dart';
+import '../models/kids_list_model.dart';
 
-class VehicalList extends StatefulWidget {
-  const VehicalList({super.key});
+class KidsList extends StatefulWidget {
+  const KidsList({super.key});
 
   @override
-  State<VehicalList> createState() => _VehicalListState();
+  State<KidsList> createState() => _KidsListState();
 }
 
-class _VehicalListState extends State<VehicalList> {
+class _KidsListState extends State<KidsList> {
   final ScrollController scrollController = ScrollController();
-  VahicleController visitorController = Get.put(VahicleController());
+  KidsController kidsController = Get.put(KidsController());
 
   @override
   void initState() {
@@ -29,13 +29,13 @@ class _VehicalListState extends State<VehicalList> {
     scrollController.addListener(() {
       if (scrollController.position.pixels >=
           scrollController.position.maxScrollExtent - 50) {
-        visitorController.loadMore();
+        kidsController.loadMore();
       }
     });
   }
 
   load() async {
-    await visitorController.getVehicleList(isRefresh: true);
+    await kidsController.getKidsList(isRefresh: true);
 
   }
 
@@ -57,21 +57,21 @@ class _VehicalListState extends State<VehicalList> {
             children: [
               SizedBox(
                 height: MediaQuery.of(context).size.height * 0.74,
-                child: visitorController.isLoading.value
+                child: kidsController.isLoading.value
                     ?SizedBox()
-                    :visitorController.vehicleListModel.value.data == null
-                    || visitorController.vehicleListModel.value.data!.isEmpty
+                    :kidsController.kidsListModel.value.data == null
+                    || kidsController.kidsListModel.value.data!.isEmpty
                     ?SizedBox()
                     :RefreshIndicator(
-                  onRefresh: visitorController.refreshList,
+                  onRefresh: kidsController.refreshList,
                   child: Obx(() {
                     final list =
-                        visitorController.vehicleListModel.value.data ?? [];
+                        kidsController.kidsListModel.value.data ?? [];
 
                     return ListView.builder(
                       controller: scrollController,
                       itemCount: list.length +
-                          (visitorController.isPaginationLoading.value ? 1 : 0),
+                          (kidsController.isPaginationLoading.value ? 1 : 0),
                       itemBuilder: (context, index) {
                         // 🔹 Normal Item
                         if (index < list.length) {
@@ -102,7 +102,7 @@ class _VehicalListState extends State<VehicalList> {
 
 // ================= CARD TEMPLATE =================
 
-Widget _dashboardCard1(Vehicle vahicle) {
+Widget _dashboardCard1(Kids vahicle) {
   return Container(
     padding: const EdgeInsets.all(15),
     margin: const EdgeInsets.symmetric(vertical: 8),
@@ -136,18 +136,20 @@ Widget _dashboardCard1(Vehicle vahicle) {
             children: [
               _statItem(label: "Name", value: "${vahicle.name??"-"}"),
               SizedBox(height: 5),
+              _statItem(label: "Parent", value: "${vahicle.parentName}"),
+              SizedBox(height: 5),
               _statItem(label: "Mobile", value: "${vahicle.phone??"_"}"),
               SizedBox(height: 5),
-              _statItem(label: "Vehicle Number", value: "${vahicle.vehicleNo}"),
+              _statItem(label: "Age", value: "${vahicle.age}"),
               SizedBox(height: 5),
               _statItem(label: "Flat", value: "${vahicle.block}/${vahicle.floor}/${vahicle.flat}"),
               SizedBox(height: 5),
               _statItem(label: "Guard", value: "${vahicle.guardName}"),
               SizedBox(height: 5),
               _statItemWidget(
-                label: "In Status",
+                label: "Status",
                 value: "${vahicle.status}",
-                color: vahicle.status == "Out" ?Colors.green : Colors.red,
+                color: vahicle.status == "In" ?Colors.green : Colors.red,
               ),
             ],
           ),
@@ -166,7 +168,7 @@ Widget _dashboardCard1(Vehicle vahicle) {
                 ),
                 alignment: Alignment.center,
                 padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                child: Image.asset("assets/v_car.png"),
+                child: Image.asset("assets/kid.png"),
               ),
               SizedBox(height: 5),
               _statItemWidgetButton(

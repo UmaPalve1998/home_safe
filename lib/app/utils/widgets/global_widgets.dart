@@ -214,6 +214,8 @@ Widget authTextFieldRounded({
   required IconData icon,
   bool isPassword = false,
   bool isSuffix = false,
+  bool isSuffixButton = false,
+  Widget? suffixButton,
   bool multiline = false,
   bool readOnly = false,
   bool obscureText = true,
@@ -248,6 +250,8 @@ Widget authTextFieldRounded({
             size: 22.0,
           ),
         )
+            : isSuffixButton
+            ? suffixButton
             : isSuffix
             ? Icon(icon, color: Colors.grey)
             : SizedBox(),
